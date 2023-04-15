@@ -48,10 +48,10 @@ class EX extends Module {
       val ALUResult          = Output(UInt())
       val branchAddr         = Output(UInt())
       val branch             = Output(Bool())
-      //val insertBubble       = Output(Bool())
-      val stall             = Output(Bool())
-      val flush_ID           = Output(Bool())
-      val flush_IF           = Output(Bool())
+      val stallIF              = Output(Bool())
+      val stallPC            = Output(Bool())
+      val flushID           = Output(Bool())
+      val flushIF           = Output(Bool())
       val Rs1Forwarded       = Output(UInt())
       val Rs2Forwarded       = Output(UInt())
     }
@@ -62,7 +62,6 @@ class EX extends Module {
   val Rs1FW        = Module(new FW).io
   val Rs2FW        = Module(new FW).io
 
-  //val insertBubble            = Wire(Bool())
   val alu_operand1            = Wire(UInt())
   val alu_operand_1_forwarded = Wire(UInt())
   val alu_operand2            = Wire(UInt())
@@ -70,13 +69,12 @@ class EX extends Module {
   val alu_result              = Wire(UInt())
   val stall_rs1              = Wire(Bool())
   val stall_rs2              = Wire(Bool())
-  val branch_taken            = Wire(Bool())
 
 
 
   Branch.branchType := io.branchType
-  Branch.src1        := alu_operand_1_forwarded
-  Branch.src2        := alu_operand_2_forwarded
+  Branch.src1       := alu_operand_1_forwarded
+  Branch.src2       := alu_operand_2_forwarded
   io.branch         := Branch.branchCondition
 
   Rs1FW.regAddr            := io.instruction.registerRs1
@@ -87,8 +85,8 @@ class EX extends Module {
   Rs1FW.ALUresultEXB       := io.ALUresultEXB
   Rs1FW.rdMEMB             := io.rdMEMB
   Rs1FW.ALUresultMEMB      := io.ALUresultMEMB
-  alu_operand_1_forwarded         := Rs1FW.operandData
-  stall_rs1                      := Rs1FW.stall
+  alu_operand_1_forwarded  := Rs1FW.operandData
+  stall_rs1                := Rs1FW.stall
 
   Rs2FW.regAddr            := io.instruction.registerRs2
   Rs2FW.controlSignalsEXB  := io.controlSignalsEXB
@@ -98,24 +96,15 @@ class EX extends Module {
   Rs2FW.ALUresultEXB       := io.ALUresultEXB
   Rs2FW.rdMEMB             := io.rdMEMB
   Rs2FW.ALUresultMEMB      := io.ALUresultMEMB
-  alu_operand_2_forwarded         := Rs2FW.operandData
-  stall_rs2                      := Rs2FW.stall
+  alu_operand_2_forwarded  := Rs2FW.operandData
+  stall_rs2                := Rs2FW.stall
 
-  //stall signal to IDBarrier and EXBarrier
-  io.stall := stall_rs1 | stall_rs2
-
-  // //Do not insert a bubble when stall
-  // when((stall_rs1 | stall_rs2) === false.B){
-  //   insertBubble  := io.controlSignals.jump | (io.controlSignals.branch & Branch.branchCondition  === 1.U)
-  // }.otherwise{
-  //   insertBubble  := false.B
-  // }
-  // io.insertBubble := insertBubble
-
-  //Flush ID if LDR or Branch -- Flush IF if Branch
-  branch_taken := io.controlSignals.jump | (io.controlSignals.branch & Branch.branchCondition  === 1.U)
-  io.flush_ID  := io.stall | branch_taken 
-  io.flush_IF  := branch_taken           
+  // Data Hazard: stall IF & PC and Flush ID   ___   Control Hazard: Stall PC and flush IF (insert 2nd bubble)
+  io.stallIF := stall_rs1 | stall_rs2
+  io.flushID := io.stallIF
+  io.stallPC := io.stallIF | io.controlSignals.branch | io.controlSignals.jump
+  io.flushIF := io.controlSignals.branch | io.controlSignals.jump
+             
 
   //Operand 1 Mux
   when(io.op1Select === op1sel.PC){

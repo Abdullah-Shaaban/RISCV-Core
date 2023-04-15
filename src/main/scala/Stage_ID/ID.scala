@@ -47,6 +47,9 @@ class ID extends Module
 
       val readData1            = Output(UInt())
       val readData2            = Output(UInt())
+      
+      val stallPC              = Output(Bool())
+      val flushIF              = Output(Bool())
     }
   )
 
@@ -76,6 +79,10 @@ class ID extends Module
   io.op2Select      := decoder.op2Select
   io.immType        := decoder.immType
   io.ALUop          := decoder.ALUop
+
+  // Handle Control Hazard: Stall PC and flush IF during Branch/Jump (insert 1st bubble)
+  io.stallPC      := io.controlSignals.branch | io.controlSignals.jump
+  io.flushIF      := io.stallPC
 
   //From instruction
   registers.io.readAddress1 := io.instruction.registerRs1

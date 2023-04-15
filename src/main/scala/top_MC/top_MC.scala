@@ -60,19 +60,19 @@ class top_MC extends Module {
 
 
   // Branch address to IF
-
-  IF.io.branchAddr            := EXBarrier.outBranchAddr
-  IF.io.controlSignals        := EXBarrier.outControlSignals
-  IF.io.branch                := EXBarrier.outBranch
+  IF.io.branchAddr            := EX.io.branchAddr
+  IF.io.controlSignals        := IDBarrier.outControlSignals
+  IF.io.branch                := EX.io.branch
   IF.io.IFBarrierPC           := IFBarrier.outCurrentPC
-  //stall
-  IF.io.stall                := EX.io.stall
+  // Stall Fetch stage (PC) in case of Control Hazard or Data Hazard (LW instruction)
+  IF.io.stall                 := ID.io.stallPC | EX.io.stallPC
 
   //Signals to IFBarrier
   IFBarrier.inCurrentPC       := IF.io.PC
   IFBarrier.inInstruction     := IF.io.instruction
   IFBarrier.stall             := EX.io.stall
-  IFBarrier.flush             := EX.io.flush_IF
+  // Inserting 2 consecutive bubbles in case of Control Hazard
+  IFBarrier.flush             := ID.io.flushIF | EX.io.flushIF
 
   //Decode stage
   ID.io.instruction           := IFBarrier.outInstruction
@@ -84,8 +84,6 @@ class top_MC extends Module {
   IDBarrier.inControlSignals := ID.io.controlSignals
   IDBarrier.inBranchType     := ID.io.branchType
   IDBarrier.inPC             := IFBarrier.outCurrentPC
-  //IDBarrier.inInsertBubble   := EX.io.insertBubble
-  IDBarrier.flush            := EX.io.flush_ID
   IDBarrier.inOp1Select      := ID.io.op1Select
   IDBarrier.inOp2Select      := ID.io.op2Select
   IDBarrier.inImmData        := ID.io.immData
@@ -93,8 +91,8 @@ class top_MC extends Module {
   IDBarrier.inALUop          := ID.io.ALUop
   IDBarrier.inReadData1      := ID.io.readData1
   IDBarrier.inReadData2      := ID.io.readData2
-  //Stalling
   IDBarrier.stall           := EX.io.stall
+  IDBarrier.flush            := EX.io.flush_ID
 
   //Execute stage
   EX.io.instruction           := IDBarrier.outInstruction
@@ -123,9 +121,6 @@ class top_MC extends Module {
   EXBarrier.inBranch          := EX.io.branch
   EXBarrier.inRd              := IDBarrier.outRd
   EXBarrier.inRs2             := EX.io.Rs2Forwarded
-  EXBarrier.inInsertBubble    := EX.io.insertBubble
-  //Stalling
-  EXBarrier.stall            := EX.io.stall
 
   //MEM stage
   MEM.io.dataIn               := EXBarrier.outRs2

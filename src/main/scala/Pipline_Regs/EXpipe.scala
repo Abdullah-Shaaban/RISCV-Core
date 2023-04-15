@@ -26,17 +26,12 @@ class EXpipe extends Module
       val inRd              = Input(UInt(5.W))
       val inRs2             = Input(UInt(32.W))
       val inALUResult       = Input(UInt(32.W))
-      val inInsertBubble    = Input(Bool())
-
-      val stall            = Input(Bool())
-
       val outBranchAddr     = Output(UInt())
       val outBranch         = Output(UInt())
       val outALUResult      = Output(UInt())
       val outControlSignals = Output(new ControlSignals)
       val outRd             = Output(UInt())
       val outRs2            = Output(UInt())
-      val outInsertBubble   = Output(Bool())
     }
   )
 
@@ -48,16 +43,9 @@ class EXpipe extends Module
   val rs2Reg            = RegEnable(io.inRs2, 0.U, !io.stall)
   val insertBubbleReg   = RegEnable(io.inInsertBubble, false.B, !io.stall)
 
-  val stallReg         = RegEnable(io.stall, false.B, true.B)
-
   io.outBranchAddr       := branchAddrReg
 
   io.outBranch           := branchReg
-
-
-  when(io.stall){
-    controlSignalsReg := ControlSignalsOB.nop
-  }
 
   io.outControlSignals := controlSignalsReg
 

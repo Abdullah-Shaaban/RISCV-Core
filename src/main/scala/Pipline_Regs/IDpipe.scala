@@ -26,7 +26,6 @@ class IDpipe extends Module
       val inControlSignals  = Input(new ControlSignals)
       val inPC              = Input(UInt(32.W))
       val inBranchType      = Input(UInt(3.W))
-      //val inInsertBubble    = Input(UInt())
       val inOp1Select       = Input(UInt(1.W))
       val inOp2Select       = Input(UInt(1.W))
       val inImmData         = Input(UInt(32.W))
@@ -70,18 +69,6 @@ class IDpipe extends Module
   //Register signal registers
   val readData1Reg          = RegEnable(io.inReadData1, 0.U, !io.stall)
   val readData2Reg          = RegEnable(io.inReadData2, 0.U, !io.stall)
-
-  //val insertBubbleReg       = RegEnable(io.inInsertBubble, 0.U, !io.stall)
-
-  // //Bubble instruction for two cycles
-  // when(io.inInsertBubble === 1.U | insertBubbleReg === 1.U){
-  //   instructionReg    := Inst.NOP
-  // }
-
-  // //Bubble control signals for two cycles
-  // when(io.inInsertBubble === 1.U | insertBubbleReg === 1.U){
-  //   controlSignalsReg := ControlSignalsOB.nop
-  // }
 
   //Flush
   when(io.flush === 1.U){

@@ -46,7 +46,7 @@ class EX extends Module {
 
 
       val ALUResult          = Output(UInt())
-      val branchAddr         = Output(UInt())
+      val branchAddr         = Output(UInt(32.W))
       val branch             = Output(Bool())
       val stallIF              = Output(Bool())
       val stallPC            = Output(Bool())

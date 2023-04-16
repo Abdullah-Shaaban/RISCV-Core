@@ -70,7 +70,7 @@ class top_MC extends Module {
   //Signals to IFBarrier
   IFBarrier.inCurrentPC       := IF.io.PC
   IFBarrier.inInstruction     := IF.io.instruction
-  IFBarrier.stall             := EX.io.stall
+  IFBarrier.stall             := EX.io.stallIF
   // Inserting 2 consecutive bubbles in case of Control Hazard
   IFBarrier.flush             := ID.io.flushIF | EX.io.flushIF
 
@@ -91,8 +91,7 @@ class top_MC extends Module {
   IDBarrier.inALUop          := ID.io.ALUop
   IDBarrier.inReadData1      := ID.io.readData1
   IDBarrier.inReadData2      := ID.io.readData2
-  IDBarrier.stall           := EX.io.stall
-  IDBarrier.flush            := EX.io.flush_ID
+  IDBarrier.flush            := EX.io.flushID
 
   //Execute stage
   EX.io.instruction           := IDBarrier.outInstruction

@@ -35,22 +35,18 @@ class EXpipe extends Module
     }
   )
 
-  val branchAddrReg     = RegEnable(io.inBranchAddr, 0.U, !io.stall)
-  val branchReg         = RegEnable(io.inBranch, 0.U, !io.stall)
-  val ALUResultReg      = RegEnable(io.inALUResult, 0.U, !io.stall) // should not be frozen?
-  val controlSignalsReg = RegEnable(io.inControlSignals, !io.stall)
-  val rdReg             = RegEnable(io.inRd, 0.U, !io.stall)
-  val rs2Reg            = RegEnable(io.inRs2, 0.U, !io.stall)
-  val insertBubbleReg   = RegEnable(io.inInsertBubble, false.B, !io.stall)
+  val branchAddrReg     = RegEnable(io.inBranchAddr, 0.U, 1.B)  //TODO: replace enabled reg with normal reg
+  val branchReg         = RegEnable(io.inBranch, 0.U, 1.B)
+  val ALUResultReg      = RegEnable(io.inALUResult, 0.U, 1.B) // should not be frozen?
+  val controlSignalsReg = RegEnable(io.inControlSignals, 1.B)
+  val rdReg             = RegEnable(io.inRd, 0.U, 1.B)
+  val rs2Reg            = RegEnable(io.inRs2, 0.U, 1.B)
 
   io.outBranchAddr       := branchAddrReg
 
   io.outBranch           := branchReg
 
   io.outControlSignals := controlSignalsReg
-
-  io.outInsertBubble := insertBubbleReg
-
 
   //destination register
   io.outRd               := rdReg

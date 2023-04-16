@@ -47,7 +47,6 @@ class IDpipe extends Module
       val inReadData1       = Input(UInt(32.W))
       val inReadData2       = Input(UInt(32.W))
 
-      val stall            = Input(Bool())
       val flush            = Input(Bool())
 
       //Output from register - registers signals
@@ -57,18 +56,18 @@ class IDpipe extends Module
   )
 
   //Decoder signal registers
-  val instructionReg        = RegEnable(io.inInstruction, !io.stall)
-  val controlSignalsReg     = RegEnable(io.inControlSignals, !io.stall)
-  val branchTypeReg         = RegEnable(io.inBranchType, 0.U, !io.stall)
-  val PCReg                 = RegEnable(io.inPC, 0.U, !io.stall)
-  val op1SelectReg          = RegEnable(io.inOp1Select, 0.U, !io.stall)
-  val op2SelectReg          = RegEnable(io.inOp2Select, 0.U, !io.stall)
-  val immDataReg            = RegEnable(io.inImmData, 0.U, !io.stall)
-  val rdReg                 = RegEnable(io.inRd, 0.U, !io.stall)
-  val ALUopReg              = RegEnable(io.inALUop, 0.U, !io.stall)
+  val instructionReg        = RegEnable(io.inInstruction, 1.B)      //TODO: replace enabled reg with normal reg
+  val controlSignalsReg     = RegEnable(io.inControlSignals, 1.B)
+  val branchTypeReg         = RegEnable(io.inBranchType, 0.U, 1.B)
+  val PCReg                 = RegEnable(io.inPC, 0.U, 1.B)
+  val op1SelectReg          = RegEnable(io.inOp1Select, 0.U, 1.B)
+  val op2SelectReg          = RegEnable(io.inOp2Select, 0.U, 1.B)
+  val immDataReg            = RegEnable(io.inImmData, 0.U, 1.B)
+  val rdReg                 = RegEnable(io.inRd, 0.U, 1.B)
+  val ALUopReg              = RegEnable(io.inALUop, 0.U, 1.B)
   //Register signal registers
-  val readData1Reg          = RegEnable(io.inReadData1, 0.U, !io.stall)
-  val readData2Reg          = RegEnable(io.inReadData2, 0.U, !io.stall)
+  val readData1Reg          = RegEnable(io.inReadData1, 0.U, 1.B)
+  val readData2Reg          = RegEnable(io.inReadData2, 0.U, 1.B)
 
   //Flush
   when(io.flush === 1.U){

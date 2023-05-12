@@ -6,7 +6,7 @@ import chisel3.experimental.{ChiselAnnotation, annotate}
 import chisel3.util.experimental.loadMemoryFromFileInline
 import firrtl.annotations.{Annotation, MemorySynthInit}
 
-class InstructionMemory (I_memoryFile: String = "src/main/scala/InstructionMemory/instructions") extends Module
+class InstructionMemory (I_memoryFile: String = "src/main/scala/InstructionMemory/beq_test") extends Module
 {
   val testHarness = IO(
     new Bundle {
@@ -28,7 +28,8 @@ class InstructionMemory (I_memoryFile: String = "src/main/scala/InstructionMemor
     override def toFirrtl = MemorySynthInit
   })
 
-  val i_memory = SyncReadMem(4096, UInt(32.W))
+  // val i_memory = SyncReadMem(4096, UInt(32.W))
+  val i_memory = Mem(4096, UInt(32.W))
   loadMemoryFromFileInline(i_memory,I_memoryFile)
 
   val addressSource = Wire(UInt(32.W))

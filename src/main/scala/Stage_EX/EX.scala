@@ -66,8 +66,8 @@ class EX extends Module {
     Branch.src1   := io.ALUresultMEMB
   }
   .otherwise{
-    alu_operand1  := rs1
-    Branch.src1   := rs1
+    alu_operand1  := io.rs1
+    Branch.src1   := io.rs1
   }
   when(io.rs2Select === 1.asUInt(2.W)){
     alu_operand2  := io.ALUresultEXB
@@ -78,8 +78,8 @@ class EX extends Module {
     Branch.src2   := io.ALUresultMEMB
   }
   .otherwise{
-    alu_operand2  := rs2
-    Branch.src2   := rs2
+    alu_operand2  := io.rs2
+    Branch.src2   := io.rs2
   } 
     //Operand 1, 2nd Mux
   when(io.op1Select === op1sel.PC){

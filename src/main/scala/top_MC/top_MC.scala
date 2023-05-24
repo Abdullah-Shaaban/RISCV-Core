@@ -20,7 +20,7 @@ import Stage_EX.EX
 import Stage_MEM.MEM
 import HazardUnit.HazardUnit
 import config.{MemUpdates, RegisterUpdates, SetupSignals, TestReadouts}
-class top_MC extends Module {
+class top_MC (I_memoryFile: String = "src/main/scala/InstructionMemory/beq_test") extends Module {
 
   val testHarness = IO(
     new Bundle {
@@ -39,7 +39,7 @@ class top_MC extends Module {
   val MEMBarrier = Module(new MEMpipe).io
 
   // Pipeline Stages
-  val IF  = Module(new IF)
+  val IF  = Module(new IF(I_memoryFile))
   val ID  = Module(new ID)
   val EX  = Module(new EX)
   val MEM = Module(new MEM)

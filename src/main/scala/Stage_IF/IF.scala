@@ -17,7 +17,7 @@ import config.{ControlSignals, IMEMsetupSignals, Inst, Instruction}
 import config.Inst._
 import InstructionMemory.InstructionMemory
 
-class IF extends Module
+class IF (I_memoryFile: String = "src/main/scala/InstructionMemory/beq_test") extends Module
 {
 
   val testHarness = IO(
@@ -39,7 +39,7 @@ class IF extends Module
   }
   )
 
-  val InstructionMemory        = Module(new InstructionMemory)
+  val InstructionMemory        = Module(new InstructionMemory(I_memoryFile))
   val nextPC      = WireInit(UInt(), 0.U)
   val PC          = RegInit(UInt(32.W), 0.U)
 

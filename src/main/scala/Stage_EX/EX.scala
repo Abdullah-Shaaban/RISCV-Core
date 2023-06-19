@@ -44,7 +44,7 @@ class EX extends Module {
       val outPCplus4         = Output(UInt(32.W))
       val ALUResult          = Output(UInt(32.W))
       val branchTarget         = Output(UInt(32.W))
-      val branchCond         = Output(Bool())
+      val branchTaken         = Output(Bool())
       val Rs2Forwarded       = Output(UInt(32.W))
     }
   )
@@ -99,7 +99,7 @@ class EX extends Module {
   }
   
   // EX stage outputs
-  io.branchCond   := Branch.branchCondition        
+  io.branchTaken   := Branch.branchCondition        
   io.branchTarget   := ALU.aluRes
   io.Rs2Forwarded := alu_operand2
   // ALU RESULT / PC + 4 MUX

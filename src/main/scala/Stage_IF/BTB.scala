@@ -14,7 +14,6 @@ class BTB extends Module {
     val entryPC             = Input(UInt(32.W))
     val entryBrTarget       = Input(UInt(32.W))
     val branchMispredicted  = Input(Bool())       // Acts as WrEn for Predictor Array
-    val branchBehavior      = Input(Bool())       // 1 means Taken -- 0 means Not Taken 
     val updatePrediction    = Input(Bool())
     val prediction          = Output(Bool())      // 1 means Taken
     val btbHit              = Output(Bool())      // 1 means Hit

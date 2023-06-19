@@ -5,7 +5,7 @@ This project implements a pipelined RISC-V processor in Chisel. The pipeline inc
 The core is part of an educational project by the Chair of Electronic Design Automation (https://eit.rptu.de/fgs/eis/) at RPTU Kaiserslautern, Germany.
 
 Supervision and Organization: Tobias Jauch, Philipp Schmitz, Alex Wezel
-Student Workers: Giorgi Solomnishvili, Zahra Jenab Mahabadi
+Student Workers: Giorgi Solomnishvili, Zahra Jenab Mahabadi, Tsotne Karchava
 
 */
 
@@ -20,7 +20,7 @@ import Stage_EX.EX
 import Stage_MEM.MEM
 import HazardUnit.HazardUnit
 import config.{MemUpdates, RegisterUpdates, SetupSignals, TestReadouts}
-class top_MC (I_memoryFile: String = "src/main/scala/InstructionMemory/beq_test") extends Module {
+class top_MC(BinaryFile: String) extends Module {
 
   val testHarness = IO(
     new Bundle {
@@ -38,8 +38,8 @@ class top_MC (I_memoryFile: String = "src/main/scala/InstructionMemory/beq_test"
   val EXBarrier  = Module(new EXpipe).io
   val MEMBarrier = Module(new MEMpipe).io
 
-  // Pipeline Stages
-  val IF  = Module(new IF(I_memoryFile))
+ // Pipeline Stages
+  val IF  = Module(new IF(BinaryFile))
   val ID  = Module(new ID)
   val EX  = Module(new EX)
   val MEM = Module(new MEM)
@@ -77,9 +77,9 @@ class top_MC (I_memoryFile: String = "src/main/scala/InstructionMemory/beq_test"
   IFBarrier.inCurrentPC       := IF.io.PC
   IFBarrier.inInstruction     := IF.io.instruction
   IFBarrier.stall             := HzdUnit.io.stall             // Stall Decode -> IFBarrier_en=0
-  IFBarrier.flush             := HzdUnit.io.flushD    
-  IFBarrier.inBTBHit          := IF.io.btbHit   
-  IFBarrier.inBTBPrediction   := IF.io.btbPrediction      
+  IFBarrier.flush             := HzdUnit.io.flushD
+  IFBarrier.inBTBHit          := IF.io.btbHit
+  IFBarrier.inBTBPrediction   := IF.io.btbPrediction
 
   //Decode stage
   ID.io.instruction           := IFBarrier.outInstruction
@@ -138,7 +138,6 @@ class top_MC (I_memoryFile: String = "src/main/scala/InstructionMemory/beq_test"
   EXBarrier.inControlSignals  := IDBarrier.outControlSignals
   EXBarrier.inRd              := IDBarrier.outRd
   EXBarrier.inRs2             := EX.io.Rs2Forwarded
-  
   //MEM stage
   MEM.io.dataIn               := EXBarrier.outRs2
   MEM.io.dataAddress          := EXBarrier.outALUResult

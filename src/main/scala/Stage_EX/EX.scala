@@ -5,7 +5,7 @@ This project implements a pipelined RISC-V processor in Chisel. The pipeline inc
 The core is part of an educational project by the Chair of Electronic Design Automation (https://eit.rptu.de/fgs/eis/) at RPTU Kaiserslautern, Germany.
 
 Supervision and Organization: Tobias Jauch, Philipp Schmitz, Alex Wezel
-Student Workers: Giorgi Solomnishvili, Zahra Jenab Mahabadi
+Student Workers: Giorgi Solomnishvili, Zahra Jenab Mahabadi, Tsotne Karchava, Abdullah Shaaban Saad Allam.
 
 */
 
@@ -14,6 +14,7 @@ package Stage_EX
 import chisel3._
 import chisel3.util._
 import ALU.ALU
+import MDU.MDU
 import Branch_OP.Branch_OP
 import config.branch_types._
 import config.op1sel._
@@ -43,14 +44,19 @@ class EX extends Module {
       val updatePrediction   = Output(Bool())
       val outPCplus4         = Output(UInt(32.W))
       val ALUResult          = Output(UInt(32.W))
-      val branchTarget         = Output(UInt(32.W))
+      val branchTarget       = Output(UInt(32.W))
       val branchCond         = Output(Bool())
       val Rs2Forwarded       = Output(UInt(32.W))
     }
   )
 
   val ALU          = Module(new ALU).io
+  val MDU          = Module(new MDU).io
   val Branch       = Module(new Branch_OP).io
+
+
+  val mdu_op_flag             = Wire(Bool())
+  val mdu_exception_flag      = Wire(Bool())
 
   val alu_operand1            = Wire(UInt())
   val alu_operand2            = Wire(UInt())
@@ -84,35 +90,44 @@ class EX extends Module {
   .otherwise{
     alu_operand2  := io.rs2
     Branch.src2   := io.rs2
-  } 
+  }
     //Operand 1, 2nd Mux
   when(io.op1Select === op1sel.PC){
     ALU.src1    := io.PC
   }.otherwise{
-    ALU.src1    := alu_operand1 
+    ALU.src1    := alu_operand1
   }
     //Operand 2, 2nd Mux
   when(io.op2Select === op2sel.rs2){
-    ALU.src2    := alu_operand2  
+    ALU.src2    := alu_operand2
   }.otherwise{
     ALU.src2    := io.immData
   }
-  
+
+
+  //MDU
+  MDU.src1           := alu_operand1
+  MDU.src2           := alu_operand2
+  MDU.MDUop          := io.ALUop
+  mdu_op_flag        := MDU.MDUopflag
+  mdu_exception_flag := MDU.MDUexceptionflag   //TODO: Flag that will be used in the future for exception handling
+
+
   // EX stage outputs
-  io.branchCond   := Branch.branchCondition        
-  io.branchTarget   := ALU.aluRes
+  io.branchCond   := Branch.branchCondition
+  io.branchTarget := ALU.aluRes
   io.Rs2Forwarded := alu_operand2
   // ALU RESULT / PC + 4 MUX
   PCplus4 := io.PC + 4.U
   when(io.branchType === branch_types.jump){  // This is for jal, we need to place PC+4 into ra register -- Alternatively, H&H propagates PC+4 from IF stage
     io.ALUResult := PCplus4
   }.otherwise{
-    io.ALUResult := ALU.aluRes
+    io.ALUResult := Mux(mdu_op_flag, MDU.MDURes, ALU.aluRes) //MUX to choose the value either from ALU or MDU
   }
 
   // BTB-related: Finding new Branch Instructions and Updating Existing Prediction
   when(io.branchType =/= branch_types.DC){ // In case instruction is a valid branch (valid means not flushed)
-    when(!io.btbHit){ // In case of BTB miss, send this as new BTB entry to IF stage 
+    when(!io.btbHit){ // In case of BTB miss, send this as new BTB entry to IF stage
       io.newBranch := 1.B  // Update BTB! -> Tells IF to take io.branchTarget as entryBrTarget AND take IDBarrier.io.outPC as entryPC
       io.updatePrediction := 0.B
     }.otherwise{ // In case of BTB hit (we already know this branch), tell IF to change prediction FSM

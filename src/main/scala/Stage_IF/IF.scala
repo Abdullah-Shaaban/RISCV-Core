@@ -5,7 +5,7 @@ This project implements a pipelined RISC-V processor in Chisel. The pipeline inc
 The core is part of an educational project by the Chair of Electronic Design Automation (https://eit.rptu.de/fgs/eis/) at RPTU Kaiserslautern, Germany.
 
 Supervision and Organization: Tobias Jauch, Philipp Schmitz, Alex Wezel
-Student Workers: Giorgi Solomnishvili, Zahra Jenab Mahabadi
+Student Workers: Giorgi Solomnishvili, Zahra Jenab Mahabadi, Tsotne Karchava, Abdullah Shaaban Saad Allam.
 
 */
 
@@ -17,7 +17,7 @@ import config.{ControlSignals, IMEMsetupSignals, Inst, Instruction}
 import config.Inst._
 import InstructionMemory.InstructionMemory
 
-class IF (I_memoryFile: String = "src/main/scala/InstructionMemory/beq_test") extends Module 
+class IF(BinaryFile: String) extends Module
 {
 
   val testHarness = IO(
@@ -46,7 +46,7 @@ class IF (I_memoryFile: String = "src/main/scala/InstructionMemory/beq_test") ex
   }
   )
 
-  val InstructionMemory        = Module(new InstructionMemory(I_memoryFile))
+  val InstructionMemory        = Module(new InstructionMemory(BinaryFile))
   val BTB = Module(new BTB)
   val nextPC      = WireInit(UInt(), 0.U)
   val PC          = RegInit(UInt(32.W), 0.U)
@@ -59,8 +59,8 @@ class IF (I_memoryFile: String = "src/main/scala/InstructionMemory/beq_test") ex
   testHarness.PC := InstructionMemory.testHarness.requestedAddress
 
   instruction := InstructionMemory.io.instruction.asTypeOf(new Instruction)
-  
-  // Adder to increment PC 
+
+  // Adder to increment PC
   PCplus4 := PC + 4.U
 
   // BTB signals
